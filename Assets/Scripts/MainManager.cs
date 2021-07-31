@@ -3,12 +3,17 @@ using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.SceneManagement;
 using UnityEngine.UI;
+using TMPro;
 
 public class MainManager : MonoBehaviour
 {
     public Brick BrickPrefab;
     public int LineCount = 6;
     public Rigidbody Ball;
+
+    //public static MainManager Instance;
+    public TextMeshProUGUI BestScore;
+    ///////////////////////////
 
     public Text ScoreText;
     public GameObject GameOverText;
@@ -22,6 +27,9 @@ public class MainManager : MonoBehaviour
     // Start is called before the first frame update
     void Start()
     {
+        ///////////////////////////////////////////
+        BestScore.text = MenuManager.Instance.nameText.text;
+        /////////////////////////////////////////////
         const float step = 0.6f;
         int perLine = Mathf.FloorToInt(4.0f / step);
         
@@ -70,6 +78,7 @@ public class MainManager : MonoBehaviour
 
     public void GameOver()
     {
+        BestScore.text += " " + m_Points;
         m_GameOver = true;
         GameOverText.SetActive(true);
     }
