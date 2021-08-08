@@ -4,15 +4,58 @@ using UnityEngine;
 using UnityEngine.SceneManagement;
 using UnityEngine.UI;
 using TMPro;
+using System.IO;
 
 public class MainManager : MonoBehaviour
 {
+    /////////////////////////////////////////////////////////////////////////////////
+    [System.Serializable]
+    class SaveData
+    {
+        public string PlayerNameBestScore;
+        public int bestScore;
+    }
+
+    public void SaveBestScore()
+    {
+        SaveData data = new SaveData();
+        //if (data.bestScore < m_BestScore)
+        //{
+            data.bestScore = m_BestScore;
+            data.PlayerNameBestScore = MenuManager.Instance.nameText.text + data.bestScore;
+        //}
+        /////////////////////////////
+        //data.PlayerNameBestScore = MenuManager.Instance.nameText.text + data.bestScore; //m_BestScore; //BestScore.text;
+        Debug.Log("Save data: " + data.PlayerNameBestScore);
+        /////////////////////////////
+        string json = JsonUtility.ToJson(data);
+        File.WriteAllText(Application.persistentDataPath + "/savefile.json", json);
+    }
+
+    public void LoadBestScore()
+    {
+        string path = Application.persistentDataPath + "/savefile.json";
+        if (File.Exists(path))
+        {
+            string json = File.ReadAllText(path);
+            SaveData data = JsonUtility.FromJson<SaveData>(json);
+
+            m_BestScore = data.bestScore;
+            /////////////////////////////
+            //MenuManager.Instance.nameText.text = data.PlayerNameBestScore; 
+            BestScore.text = data.PlayerNameBestScore;
+            /////////////////////////////
+        }
+    }
+    /////////////////////////////////////////////////////////////////////////////////
     public Brick BrickPrefab;
     public int LineCount = 6;
     public Rigidbody Ball;
 
     //public static MainManager Instance;
     public TextMeshProUGUI BestScore;
+    /////////////////////////// 
+    private int temp_BestScore;
     ///////////////////////////
 
     public Text ScoreText;
@@ -20,6 +63,7 @@ public class MainManager : MonoBehaviour
     
     private bool m_Started = false;
     private int m_Points;
+    private int m_BestScore;
     
     private bool m_GameOver = false;
 
@@ -27,8 +71,10 @@ public class MainManager : MonoBehaviour
     // Start is called before the first frame update
     void Start()
     {
+
         ///////////////////////////////////////////
-        BestScore.text = MenuManager.Instance.nameText.text;
+        LoadBestScore();
+        //BestScore.text = MenuManager.Instance.nameText.text;
         /////////////////////////////////////////////
         const float step = 0.6f;
         int perLine = Mathf.FloorToInt(4.0f / step);
@@ -78,7 +124,19 @@ public class MainManager : MonoBehaviour
 
     public void GameOver()
     {
-        BestScore.text += " " + m_Points;
+        m_BestScore = m_Points;
+        //BestScore.text += " " + m_BestScore;
+        string path = Application.persistentDataPath + "/savefile.json";
+        if (File.Exists(path))
+        {
+            string json = File.ReadAllText(path);
+            SaveData data = JsonUtility.FromJson<SaveData>(json);
+            temp_BestScore = data.bestScore;
+        }
+        if (temp_BestScore < m_Points)
+        {
+            SaveBestScore();
+        }
         m_GameOver = true;
         GameOverText.SetActive(true);
     }
